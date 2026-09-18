@@ -1,7 +1,6 @@
-# general
-markdown# Arquitectura de IA Neuro-Simbólica y Aprendizaje por Refuerzo
+markdown# Arquitectura de IA Neuro-Simbólica y Aprendizaje por Refuerzo Explicable
 
-Este documento define la arquitectura técnica inicial para construir un sistema de inteligencia artificial basado en redes neuronales abstractas (no predictivas). El sistema procesará flujos de datos híbridos (comportamiento humano y restricciones matemáticas) utilizando **Aprendizaje por Refuerzo Propio** (Reinforcement Learning) y mecanismos de **Recurrencia**.
+Este documento define la arquitectura técnica inicial para construir un sistema de inteligencia artificial basado en redes neuronales abstractas (no predictivas). El sistema procesará flujos de datos híbridos (comportamiento humano y restricciones matemáticas) utilizando **Aprendizaje por Refuerzo Propio** (Reinforcement Learning), mecanismos de **Recurrencia** y una capa de abstracción de **IA Explicable (XAI)** para auditar el conocimiento del sistema.
 
 ---
 
@@ -24,7 +23,7 @@ El sistema se organiza en niveles secuenciales donde **las neuronas de una capa 
 ### C. Recurrencia (Dimensión Temporal)
 Para procesar flujos de datos donde el orden de los factores altera el producto y la longitud de la secuencia es variable (ej: listas de \(N\) acciones del usuario), se introduce un bucle de retroalimentación:
 *   La capa se ejecuta dentro de un bucle `for` iterativo en Python.
-*   En cada iteración, la ecuación de la neurona recibe el nuevo dato presente **y además** su propia salida del paso anterior (`hidden_state`).
+*   En cada iteración, la ecuación de la neurona recibe el nuevo dato presente **y además** su propio estado del paso anterior (`hidden_state`).
 *   Esto permite comprimir todo el historial de la secuencia dentro de una única variable matemática continua que evoluciona en el tiempo.
 
 ---
@@ -48,12 +47,31 @@ Implementa una arquitectura **Actor-Crítico** (ej: Algoritmo *Adam* utilizando 
 
 ---
 
-## 3. Plantilla Base del Proyecto (Punto de Partida en Python)
+## 3. Capa de Abstracción Explicable (XAI) y Metadatos de Pensamiento
 
-Esta estructura limpia en Python conceptualiza los componentes clave que gobernarán el entorno del proyecto antes de acoplarlos a tensores de hardware:
+Para resolver el problema de la "caja negra" y justificar matemáticamente las decisiones de la IA, cada peso se vincula a un objeto de software estructurado que dota de significado humano a los fríos números decimales de la RAM.
+
+*   **Diccionario de Conceptos Estrictos:** Tú defines el mapa conceptual inicial de la primera capa. Cada índice de la matriz de entrada tiene asignado un DNI semántico y una justificación de diseño.
+*   **Auditoría de Magnitud y Signo:** El sistema interpreta los floats fijados por el Mecánico para generar conclusiones legibles por humanos:
+    *   **Peso cercano a `0.0`:** El concepto ha sido descartado por el optimizador por falta de correlación matemática con el éxito del entorno.
+    *   **Peso Positivo (`> 0.0`):** Sinergia directa. A mayor presencia del concepto, mayor estabilidad o puntuación.
+    *   **Peso Negativo (`< 0.0`):** Fuerza de contención. El concepto actúa como un limitador de riesgo o freno de seguridad dentro del sistema.
+
+---
+
+## 4. Plantilla Base del Proyecto (Punto de Partida en Python)
+
+Esta estructura limpia en Python conceptualiza los componentes clave, incluyendo el envoltorio (*Wrapper*) de metadatos explicables:
 
 ```python
 from typing import List, Dict, Any, Tuple
+
+# 1. Tu mapa de control conceptual para auditar a la IA
+DICCIONARIO_CONCEPTOS: Dict[int, Dict[str, str]] = {
+    0: {"nombre": "Nivel de Urgencia", "justificacion_diseno": "Mide velocidad de clics para detectar pánico."},
+    1: {"nombre": "Frustración Técnica", "justificacion_diseno": "Mide intentos fallidos de login."},
+    2: {"nombre": "Inercia Matemática", "justificacion_diseno": "Mide el sesgo de estabilidad del entorno."}
+}
 
 class EntornoCognitivo:
     """
@@ -61,82 +79,82 @@ class EntornoCognitivo:
     y el sistema de recompensas (El Árbitro).
     """
     def __init__(self):
-        # Restricciones matemáticas estrictas del sistema
         self.limite_operaciones_maximas = 100.0
 
     def obtener_datos_usuario(self) -> List[float]:
-        # Simulación de la entrada de datos humanos brutos
-        return [0.85, 2.0, 0.12] # Ejemplo: [Nivel_Actividad, Intentos, Tiempo]
+        return [0.85, 2.0, 0.12] # Ejemplo: [Urgencia, Frustración, Inercia]
 
     def evaluar_accion_y_premiar(self, accion_ia: float, datos_contexto: List[float]) -> float:
         """
         EL ÁRBITRO: Aquí programas la lógica de puntos que moldeará los pesos.
         """
         recompensa = 0.0
-        
-        # Regla 1: Restricción matemática estricta
         if accion_ia > self.limite_operaciones_maximas:
             recompensa -= 50.0  # Penalización crítica por romper las matemáticas
-            
-        # Regla 2: Alineación con la lógica del comportamiento humano
-        # Si la IA responde con calma ante un usuario calmado, sumamos puntos
         if datos_contexto[0] < 0.5 and accion_ia < 10.0:
             recompensa += 10.0
         else:
-            recompensa -= 5.0  # Penalización por sobreelección o fricción
-            
+            recompensa -= 5.0
         return recompensa
 
-class AgenteNeuronal:
+class CapaExplicable:
     """
-    Representa la red por capas y su memoria de trabajo (El Actor).
+    Representa la red por capas, su memoria de trabajo y su auditoría semántica.
     """
-    def __init__(self):
-        # Pesos iniciales aleatorios (Floats en memoria)
-        self.pesos_capa_1 = [0.1, -0.4, 0.8]
+    def __init__(self, conceptos: dict):
+        # Los floats que usa el hardware (Inicializados al azar, modificados por el mecánico)
+        self.valores_pesos = [4.8, 0.0, -2.1]  
         self.peso_memoria_recurrente = 0.5
         self.memoria_trabajo = 0.0
+        self.meta_conceptos = conceptos 
 
     def procesar_iteracion(self, datos: List[float]) -> float:
-        """
-        FASE 1: Ejecución de la fórmula matemática en bucle recurrente.
-        """
-        # 1. Multiplicación de la primera capa (Datos brutos por pesos)
-        analisis_capa_1 = sum(d * w for d, w in zip(datos, self.pesos_capa_1))
-        
-        # 2. Inyección de la recurrencia (Fusionar presente con el pasado inmediato)
+        """ FASE 1: Ejecución matemática en bucle recurrente """
+        analisis_capa_1 = sum(d * w for d, w in zip(datos, self.valores_pesos))
         self.memoria_trabajo = (analisis_capa_1 * 0.7) + (self.memoria_trabajo * self.peso_memoria_recurrente)
-        
-        # 3. Decisión de salida
-        accion_final = self.memoria_trabajo * 2.5
-        return accion_final
+        return self.memoria_trabajo * 2.5
 
-# --- BUCLE DE SIMULACIÓN Y ENTRENAMIENTO CONCEPTUAL ---
+    def generar_auditoria_de_pensamiento(self) -> List[Dict[str, str]]:
+        """ Traduce los fríos floats del mecánico en explicaciones humanas """
+        auditoria = []
+        for i, valor in enumerate(self.valores_pesos):
+            concepto = self.meta_conceptos[i]
+            if abs(valor) < 0.01:
+                estado = "Concepto anulado / Ignorado"
+                razon = "El Mecánico demostró que este dato no correlaciona con el éxito."
+            elif valor > 0:
+                estado = f"Sinergia Positiva (Fuerza: {valor:.2f})"
+                razon = f"A mayor '{concepto['nombre']}', mayor estabilidad del sistema."
+            else:
+                estado = f"Freno de Seguridad (Fuerza: {valor:.2f})"
+                razon = f"Actúa como un limitador para mitigar riesgos cuando el valor sube."
+
+            auditoria.append({
+                "Concepto": concepto["nombre"],
+                "Diseño Original": concepto["justificacion_diseno"],
+                "Estado Matemático Óptimo": estado,
+                "Conclusión del Mecánico": razon
+            })
+        return auditoria
+
+# --- BUCLE DE SIMULACIÓN Y AUDITORÍA ---
 if __name__ == "__main__":
     entorno = EntornoCognitivo()
-    ia_actor = AgenteNeuronal()
+    ia_capa = CapaExplicable(DICCIONARIO_CONCEPTOS)
     
-    # Simulación de un flujo secuencial humano de 3 pasos
+    # 1. Simulación del flujo de acciones (Pesos congelados en la ejecución)
     for paso in range(3):
         datos_humanos = entorno.obtener_datos_usuario()
-        
-        # La IA ejecuta sus fórmulas (Pesos congelados)
-        decision = ia_actor.procesar_iteracion(datos_humanos)
-        
-        # El Árbitro evalúa externamente el resultado
+        decision = ia_capa.procesar_iteracion(datos_humanos)
         puntos = entorno.evaluar_accion_y_premiar(decision, datos_humanos)
+        print(f"Paso {paso} -> Acción IA: {decision:.2f} | Puntuación: {puntos:.1f}")
         
-        print(f"Paso {paso} -> Acción IA: {decision:.2f} | Puntuación del Árbitro: {puntos:.1f}")
-        
-    # [AQUÍ ENTRARÍA EL MECÁNICO/OPTIMIZADOR ASÍNCRONO]
-    # Analizaría el historial de 'puntos' y modificaría 'ia_actor.pesos_capa_1'
+    # 2. El Mecánico optimiza y altera los valores de 'ia_capa.valores_pesos' (Simulado)
+    print("\n--- INFORME DE AUDITORÍA CONCEPTUAL DEL PROYECTO ---")
+    for informe in ia_capa.generar_auditoria_de_pensamiento():
+        print(f"\n📌 Concepto: {informe['Concepto']}")
+        print(f"   - Propósito de diseño: {informe['Diseño Original']}")
+        print(f"   - Configuración óptima encontrada: {informe['Estado Matemático Óptimo']}")
+        print(f"   - Justificación matemática: {informe['Conclusión del Mecánico']}")
 ```
-***
-
-<FollowUp>
-Con este mapa mental y técnico ya completamente afianzado, el siguiente paso de ingeniería es **diseñar las reglas de tu entorno**. Para ayudarte a esbozar la función de recompensa exacta de tu proyecto:
-* ¿Cómo se estructuran esos **datos humanos** que va a recibir el entorno (ej: telemetría de una interfaz, métricas de un perfil, una secuencia de comandos lógicos)?
-* ¿Cuál es el **escenario ideal o "Estado de Victoria"** donde quieres que tu código Python premie al agente con la máxima puntuación?
-
-Cuéntame y diseñamos el algoritmo de recompensa específico para tu caso de uso.
-</FollowUp>
+Con esta arquitectura documentada y estructurada para tu repositorio, tienes el control de las matemáticas y la visibilidad de los conceptos.Para empezar a rellenar el DICCIONARIO_CONCEPTOS con la lógica real de tu idea:¿Cuáles son las primeras variables humanas o matemáticas que vas a inyectar en los índices 0, 1 y 2 de tu red?¿Quieres que la auditoría guarde un historial de cómo cambian las explicaciones a lo largo de los días de entrenamiento para ver cómo evoluciona el pensamiento de la IA?
