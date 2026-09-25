@@ -1,0 +1,30 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: mi-gateway-traefik
+  namespace: traefik
+spec:
+  gatewayClassName: traefik
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 8000
+    allowedRoutes:
+      namespaces:
+        from: All
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ruta-mi-app
+  namespace: default # Cambia esto si tu aplicación corre en otro namespace
+spec:
+  parentRefs:
+  - name: mi-gateway-traefik
+    namespace: traefik
+  hostnames:
+  - "palomicius.local" # <-- Tu dominio local
+  rules:
+  - backendRefs:
+    - name: nginx-demo # <-- REEMPLAZA con el nombre real de tu Service
+      port: 80 # Puerto en el que escucha tu Service

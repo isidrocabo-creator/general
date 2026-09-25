@@ -1,0 +1,64 @@
+iiii
+ggg
+
+Paso 1 (Guía anterior): Crea el archivo gateway-api-crds.yaml con las definiciones y ejecutas microk8s kubectl apply -f gateway-api-crds.yaml.
+microk8s kubectl apply -f gateway-api-crds.yaml
+
+customresourcedefinition.apiextensions.k8s.io/gatewayclasses.gateway.networking.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/gateways.gateway.networking.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/httproutes.gateway.networking.k8s.io created
+
+NO VALE Y DEBO BORRAR ESE PASO
+
+microk8s kubectl delete -f gateway-api-crds.yaml
+
+
+paloma@palomicius:~/GIT/general$ microk8s kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+customresourcedefinition.apiextensions.k8s.io/gateways.gateway.networking.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/grpcroutes.gateway.networking.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/httproutes.gateway.networking.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/referencegrants.gateway.networking.k8s.io created
+
+
+paloma@palomicius:~/GIT/general$ microk8s helm repo add traefik https://traefik.github.io/charts
+microk8s helm repo update
+"traefik" already exists with the same configuration, skipping
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "traefik" chart repository
+Update Complete. ⎈Happy Helming!⎈
+paloma@palomicius:~/GIT/general$ microk8s helm install traefik traefik/traefik \
+  --namespace traefik \
+  --create-namespace \
+  --set providers.kubernetesGateway.enabled=true \
+  --set ingressClass.enabled=false
+NAME: traefik
+LAST DEPLOYED: Thu Sep 24 23:16:43 2026
+NAMESPACE: traefik
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+traefik with docker.io/traefik:v3.7.13 has been deployed successfully on traefik namespace!
+
+⚠️ DEPRECATION WARNING: Gateway API CRDs will no longer be shipped with this chart in a future major version.
+You will need to install them yourself before deploying Traefik v3.7:
+  kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/standard-install.yaml
+
+
+
+paloma@palomicius:~/GIT/general$ kubectl apply -f mi-red.yaml 
+gateway.gateway.networking.k8s.io/mi-gateway-traefik created
+httproute.gateway.networking.k8s.io/ruta-mi-app created
+
+
+no se levantaba el pod de traefik y :
+microk8s kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/experimental-install.yaml
+
+
+microk8s kubectl rollout restart deployment traefik -n traefik
+
+
+microk8s kubectl get pods -n traefik
+microk8s kubectl logs -n traefik deploy/traefik | grep -i tlsroute
+microk8s kubectl get gatewayclass
+microk8s kubectl get gateway -n traefik
